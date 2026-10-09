@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ActiveSession } from '../types';
-import { SITE_CONFIG } from '../config/site';
 import { Button } from './ui/Button';
 import { 
   WifiHigh, 
@@ -26,11 +25,9 @@ export const SessionStatus: React.FC<SessionStatusProps> = ({
   const [downloadBytes, setDownloadBytes] = useState(session.bytesDown);
   const [uploadBytes, setUploadBytes] = useState(session.bytesUp);
 
-  // Live countdown & realistic network traffic simulation
   useEffect(() => {
     const timer = setInterval(() => {
       setSecondsRemaining((prev) => Math.max(0, prev - 1));
-      // Simulate live bytes transfer
       setDownloadBytes((prev) => prev + Math.floor(Math.random() * 45000 + 10000));
       setUploadBytes((prev) => prev + Math.floor(Math.random() * 12000 + 2000));
     }, 1000);
@@ -52,94 +49,84 @@ export const SessionStatus: React.FC<SessionStatusProps> = ({
   };
 
   return (
-    <div className="surface-card rounded-2xl p-5 border border-emerald-500/40 space-y-5 shadow-xl shadow-emerald-950/20">
-      {/* Connected Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-            <WifiHigh size={24} weight="bold" />
+    <div className="nixtio-card p-5 space-y-4 border-emerald-500/40">
+      {/* Session Title Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-[#1f2738]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <WifiHigh size={18} weight="bold" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
+            <div className="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>Online • {session.planName}</span>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <h3 className="text-sm font-bold text-white">Connected & Online</h3>
             </div>
-            <p className="text-xs text-slate-400">{SITE_CONFIG.networkSSID}</p>
+            <div className="text-[11px] text-slate-400 font-mono">
+              IP: {session.ipAddress} • MAC: {session.macAddress}
+            </div>
           </div>
         </div>
 
-        <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-          Active Plan: {session.planName}
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          MikroTik Hotspot
         </span>
       </div>
 
-      {/* Countdown Clock Display */}
-      <div className="bg-slate-950/90 rounded-2xl p-5 border border-slate-800/80 text-center space-y-1">
-        <div className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 flex items-center justify-center gap-1.5">
-          <Clock size={13} />
-          Time Remaining
+      {/* Countdown Card */}
+      <div className="bg-[#141924] rounded-xl p-4 border border-[#232c3d] text-center space-y-1">
+        <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-400 flex items-center justify-center gap-1">
+          <Clock size={12} />
+          <span>Active Session Time Remaining</span>
         </div>
-        <div className="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-emerald-400">
+        <div className="text-3xl sm:text-4xl font-extrabold font-mono text-emerald-400 tracking-tight">
           {formatTime(secondsRemaining)}
         </div>
-        <div className="text-xs text-slate-500">
-          Session expires at {session.expiresAt}
+        <div className="text-[11px] text-slate-500">
+          Scheduled expiration: {session.expiresAt}
         </div>
       </div>
 
-      {/* Traffic & Device Telemetry Grid */}
-      <div className="grid grid-cols-2 gap-3 text-xs">
-        <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/60 space-y-1">
-          <div className="flex items-center gap-1.5 text-slate-400 font-medium">
-            <DownloadSimple size={14} className="text-emerald-400" />
-            Downloaded
+      {/* Bandwidth Usage Grid */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="bg-[#0e121b] rounded-lg p-3 border border-[#1f2738]">
+          <div className="text-[11px] text-slate-400 flex items-center gap-1">
+            <DownloadSimple size={13} className="text-emerald-400" />
+            <span>Downloaded</span>
           </div>
-          <div className="text-sm font-bold font-mono text-slate-200">
+          <div className="text-base font-bold font-mono text-slate-100 mt-1">
             {formatBytes(downloadBytes)}
           </div>
         </div>
 
-        <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/60 space-y-1">
-          <div className="flex items-center gap-1.5 text-slate-400 font-medium">
-            <UploadSimple size={14} className="text-blue-400" />
-            Uploaded
+        <div className="bg-[#0e121b] rounded-lg p-3 border border-[#1f2738]">
+          <div className="text-[11px] text-slate-400 flex items-center gap-1">
+            <UploadSimple size={13} className="text-sky-400" />
+            <span>Uploaded</span>
           </div>
-          <div className="text-sm font-bold font-mono text-slate-200">
+          <div className="text-base font-bold font-mono text-slate-100 mt-1">
             {formatBytes(uploadBytes)}
-          </div>
-        </div>
-
-        <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/60 space-y-1">
-          <div className="text-slate-400 font-medium">IP Address</div>
-          <div className="text-xs font-bold font-mono text-slate-300">
-            {session.ipAddress}
-          </div>
-        </div>
-
-        <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/60 space-y-1">
-          <div className="text-slate-400 font-medium">MAC Address</div>
-          <div className="text-xs font-bold font-mono text-slate-300">
-            {session.macAddress}
           </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="pt-1 flex gap-2.5">
+      {/* Buttons */}
+      <div className="flex gap-2 pt-1">
         <Button
           onClick={onExtend}
           variant="mpesa"
-          className="flex-1"
+          size="sm"
+          className="flex-1 text-xs font-semibold gap-1.5"
         >
-          <ArrowClockwise size={16} weight="bold" />
-          <span>Extend / Buy Time</span>
+          <ArrowClockwise size={14} weight="bold" />
+          <span>Renew / Change Plan</span>
         </Button>
         <Button
           onClick={onDisconnect}
           variant="outline"
-          className="text-rose-400 border-rose-900/40 hover:bg-rose-950/30"
+          size="sm"
+          className="text-rose-400 border-rose-900/40 hover:bg-rose-950/30 text-xs"
         >
-          <SignOut size={16} weight="bold" />
+          <SignOut size={14} weight="bold" />
           <span>Disconnect</span>
         </Button>
       </div>

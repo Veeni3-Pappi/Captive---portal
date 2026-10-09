@@ -2,37 +2,34 @@ import React, { useState } from 'react';
 import { SITE_CONFIG, WIFI_PLANS } from './config/site';
 import { WifiPlan, ActiveSession } from './types';
 import { Header } from './components/Header';
+import { NetworkMetrics } from './components/NetworkMetrics';
 import { PlanSelector } from './components/PlanSelector';
-import { MpesaSection } from './components/MpesaSection';
-import { VoucherLoginForm } from './components/VoucherLoginForm';
+import { CheckoutPanel } from './components/CheckoutPanel';
 import { SessionStatus } from './components/SessionStatus';
 import { SupportModal } from './components/SupportModal';
 import { Footer } from './components/Footer';
 import { 
-  CreditCard, 
-  Ticket, 
-  Gauge, 
   Sparkle, 
-  Lightning
+  ShieldCheck, 
+  Lightning, 
+  Check, 
+  LockKey
 } from '@phosphor-icons/react';
 
 export const App: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<WifiPlan>(
     WIFI_PLANS.find((p) => p.id === 'plan-1d') || WIFI_PLANS[0]
   );
-  const [activeTab, setActiveTab] = useState<'mpesa' | 'voucher' | 'status'>('mpesa');
   const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [claimedTrial, setClaimedTrial] = useState(false);
 
   const handleConnect = (session: ActiveSession) => {
     setActiveSession(session);
-    setActiveTab('status');
   };
 
   const handleDisconnect = () => {
     setActiveSession(null);
-    setActiveTab('mpesa');
   };
 
   const handleClaimFreeTrial = () => {
@@ -41,7 +38,7 @@ export const App: React.FC = () => {
       isConnected: true,
       ipAddress: '192.168.88.243',
       macAddress: 'DC:A6:32:8B:11:0E',
-      planName: '5-Minute Complimentary Pass',
+      planName: '5-Minute Speed Test Pass',
       timeRemainingSeconds: 300,
       bytesDown: 450000,
       bytesUp: 120000,
@@ -51,164 +48,144 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between bg-grid-pattern">
-      {/* Top Bar */}
-      <Header onOpenSupport={() => setIsSupportOpen(true)} />
+    <div className="min-h-screen bg-[#0a0d14] text-slate-100 flex flex-col justify-between dashboard-grid">
+      {/* Top Header */}
+      <Header
+        isConnected={!!activeSession}
+        onOpenSupport={() => setIsSupportOpen(true)}
+        onViewSession={() => {
+          // scrolls to or focuses session
+        }}
+      />
 
-      {/* Main Content Container */}
-      <main className="w-full max-w-xl mx-auto px-4 py-5 flex-1 space-y-5">
-        {/* Hero Header Card */}
-        <div className="surface-card rounded-2xl p-5 border border-slate-800 text-center relative overflow-hidden">
-          <div className="space-y-1.5 relative z-10">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold mb-1">
-              <Lightning size={14} weight="fill" />
-              <span>Fastest Internet in Town</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
-              Connect to {SITE_CONFIG.brandName}
-            </h2>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Select an unlimited package below and pay with M-PESA for instant, seamless WiFi access.
-            </p>
-          </div>
+      {/* Main Command Center Layout */}
+      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 space-y-6">
+        {/* Top Metric Strip (Nixtio & Fireart Style) */}
+        <NetworkMetrics isConnected={!!activeSession} />
 
-          {/* Complimentary Free Trial banner if not claimed */}
-          {SITE_CONFIG.freeTrialAvailable && !claimedTrial && !activeSession && (
-            <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 text-left bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-              <div className="flex items-center gap-2">
-                <Sparkle size={18} weight="fill" className="text-amber-400 shrink-0" />
-                <div>
-                  <div className="text-xs font-bold text-white">Test Our Speed (5 Mins Free)</div>
-                  <div className="text-[11px] text-slate-400">No payment required for trial</div>
+        {/* 2-Column Responsive Dashboard */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Plan Explorer & Network Highlights (7 cols) */}
+          <div className="lg:col-span-7 space-y-5">
+            {/* Free Trial Callout Banner */}
+            {SITE_CONFIG.freeTrialAvailable && !claimedTrial && !activeSession && (
+              <div className="nixtio-card-subtle p-3.5 border-amber-500/30 flex items-center justify-between gap-3 bg-[#161a12]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 shrink-0">
+                    <Sparkle size={16} weight="fill" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>Complimentary 5-Minute Speed Pass</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300">
+                        FREE
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-300">
+                      Test speed & latency on your phone before paying
+                    </div>
+                  </div>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleClaimFreeTrial}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors shrink-0 shadow-sm"
+                >
+                  Claim Pass
+                </button>
               </div>
-              <button
-                onClick={handleClaimFreeTrial}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors shrink-0"
-              >
-                Claim Pass
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Tab Navigation (M-Pesa / Voucher / My Session) */}
-        <div className="grid grid-cols-3 gap-1.5 p-1.5 bg-slate-950/90 rounded-2xl border border-slate-800 text-xs font-semibold">
-          <button
-            onClick={() => setActiveTab('mpesa')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl transition-all duration-150 ${
-              activeTab === 'mpesa'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/50'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-            }`}
-          >
-            <CreditCard size={15} weight="bold" />
-            <span>M-PESA</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('voucher')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl transition-all duration-150 ${
-              activeTab === 'voucher'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/50'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-            }`}
-          >
-            <Ticket size={15} weight="bold" />
-            <span>Voucher</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('status')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl transition-all duration-150 relative ${
-              activeTab === 'status'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/50'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-            }`}
-          >
-            <Gauge size={15} weight="bold" />
-            <span>My Session</span>
-            {activeSession && (
-              <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2 right-2" />
             )}
-          </button>
-        </div>
 
-        {/* Tab 1: M-PESA Purchase Flow */}
-        {activeTab === 'mpesa' && (
-          <div className="space-y-5">
-            <div>
-              <div className="flex items-center justify-between mb-2.5 px-0.5">
-                <h3 className="text-sm font-bold text-slate-200">
-                  Step 1: Choose Your Plan
-                </h3>
-                <span className="text-xs text-slate-400">
-                  {WIFI_PLANS.length} Unlimited Tiers
+            {/* Plan Selector Card */}
+            <div className="nixtio-card p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#1f2738]">
+                <div>
+                  <h2 className="text-sm font-bold text-white tracking-tight">
+                    Select Access Tier
+                  </h2>
+                  <p className="text-[11px] text-slate-400">
+                    High-speed fiber connectivity with zero throttling
+                  </p>
+                </div>
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#1e2738] text-slate-300 border border-slate-700">
+                  {WIFI_PLANS.length} Tiers Available
                 </span>
               </div>
+
               <PlanSelector
                 selectedPlan={selectedPlan}
                 onSelectPlan={(plan) => setSelectedPlan(plan)}
               />
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-2.5 px-0.5">
-                <h3 className="text-sm font-bold text-slate-200">
-                  Step 2: Pay & Connect
-                </h3>
-                <span className="text-xs text-emerald-400 font-medium">
-                  Instant STK Push
-                </span>
+            {/* Network Assurances Bento Strip */}
+            <div className="grid grid-cols-3 gap-3 text-xs">
+              <div className="nixtio-card-subtle p-3 space-y-1">
+                <div className="text-emerald-400 font-bold flex items-center gap-1 text-[11px]">
+                  <Lightning size={14} weight="fill" />
+                  <span>Unlimited Data</span>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  No bandwidth caps or throttling on all packages
+                </div>
               </div>
-              <MpesaSection
+
+              <div className="nixtio-card-subtle p-3 space-y-1">
+                <div className="text-sky-400 font-bold flex items-center gap-1 text-[11px]">
+                  <ShieldCheck size={14} weight="fill" />
+                  <span>Instant STK Push</span>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  Automated PIN prompt to Buy Goods Till 7181852
+                </div>
+              </div>
+
+              <div className="nixtio-card-subtle p-3 space-y-1">
+                <div className="text-amber-400 font-bold flex items-center gap-1 text-[11px]">
+                  <LockKey size={14} weight="fill" />
+                  <span>MikroTik Guard</span>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  Dedicated bandwidth allocation per connected device
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Checkout & Authentication Terminal (5 cols) */}
+          <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-20">
+            {activeSession ? (
+              <div className="space-y-4">
+                <SessionStatus
+                  session={activeSession}
+                  onDisconnect={handleDisconnect}
+                  onExtend={() => {
+                    // allows choosing another plan
+                  }}
+                />
+
+                <div className="nixtio-card-subtle p-4 border-[#1f2738] text-xs text-slate-300 space-y-2">
+                  <div className="font-bold text-white flex items-center gap-1.5">
+                    <Check size={14} className="text-emerald-400" />
+                    <span>Device Authenticated</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    Your MAC address has been granted full internet access via MikroTik RouterOS gateway.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <CheckoutPanel
                 selectedPlan={selectedPlan}
                 onConnect={handleConnect}
               />
-            </div>
-          </div>
-        )}
-
-        {/* Tab 2: Voucher / Scratch Card Flow */}
-        {activeTab === 'voucher' && (
-          <div className="space-y-4">
-            <VoucherLoginForm onConnect={handleConnect} />
-          </div>
-        )}
-
-        {/* Tab 3: Session Status Flow */}
-        {activeTab === 'status' && (
-          <div className="space-y-4">
-            {activeSession ? (
-              <SessionStatus
-                session={activeSession}
-                onDisconnect={handleDisconnect}
-                onExtend={() => setActiveTab('mpesa')}
-              />
-            ) : (
-              <div className="surface-card rounded-2xl p-8 border border-slate-800 text-center space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-400 mx-auto">
-                  <Gauge size={26} />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">No Active Session Found</h3>
-                  <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">
-                    You are not currently authenticated on this device. Purchase a package or log in with a voucher to start browsing.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveTab('mpesa')}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition-colors"
-                >
-                  View WiFi Plans
-                </button>
-              </div>
             )}
           </div>
-        )}
+        </div>
       </main>
 
-      {/* Support & Help Modal */}
+      {/* Support & Payment Assistance Modal */}
       <SupportModal
         isOpen={isSupportOpen}
         onClose={() => setIsSupportOpen(false)}
