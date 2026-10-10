@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ActiveSession } from '../types';
-import { Button } from './ui/Button';
-import { 
-  WifiHigh, 
-  ArrowClockwise, 
-  SignOut, 
-  Clock, 
-  DownloadSimple, 
-  UploadSimple
+import {
+  DownloadSimple,
+  UploadSimple,
+  ArrowClockwise,
+  SignOut,
 } from '@phosphor-icons/react';
 
 interface SessionStatusProps {
@@ -21,114 +18,99 @@ export const SessionStatus: React.FC<SessionStatusProps> = ({
   onDisconnect,
   onExtend,
 }) => {
-  const [secondsRemaining, setSecondsRemaining] = useState(session.timeRemainingSeconds);
-  const [downloadBytes, setDownloadBytes] = useState(session.bytesDown);
-  const [uploadBytes, setUploadBytes] = useState(session.bytesUp);
+  const [seconds, setSeconds] = useState(session.timeRemainingSeconds);
+  const [down, setDown] = useState(session.bytesDown);
+  const [up, setUp] = useState(session.bytesUp);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsRemaining((prev) => Math.max(0, prev - 1));
-      setDownloadBytes((prev) => prev + Math.floor(Math.random() * 45000 + 10000));
-      setUploadBytes((prev) => prev + Math.floor(Math.random() * 12000 + 2000));
+    const t = setInterval(() => {
+      setSeconds((s) => Math.max(0, s - 1));
+      setDown((d) => d + Math.floor(Math.random() * 40000 + 8000));
+      setUp((u) => u + Math.floor(Math.random() * 10000 + 2000));
     }, 1000);
-    return () => clearInterval(timer);
+    return () => clearInterval(t);
   }, []);
 
-  const formatTime = (secs: number) => {
-    const hours = Math.floor(secs / 3600);
-    const mins = Math.floor((secs % 3600) / 60);
-    const seconds = secs % 60;
-    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  const formatTime = (s: number) => {
+    const h = Math.floor(s / 3600).toString().padStart(2, '0');
+    const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+    const sec = (s % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${sec}`;
   };
 
-  const formatBytes = (bytes: number) => {
-    if (bytes < 1024 * 1024) {
-      return `${(bytes / 1024).toFixed(1)} KB`;
-    }
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  };
+  const formatBytes = (b: number) =>
+    b < 1024 * 1024
+      ? `${(b / 1024).toFixed(1)} KB`
+      : `${(b / (1024 * 1024)).toFixed(2)} MB`;
 
   return (
-    <div className="nixtio-card p-5 space-y-4 border-emerald-500/40">
-      {/* Session Title Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#1f2738]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-            <WifiHigh size={18} weight="bold" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>Online • {session.planName}</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            </div>
-            <div className="text-[11px] text-slate-400 font-mono">
-              IP: {session.ipAddress} • MAC: {session.macAddress}
-            </div>
-          </div>
+    <div>
+      {/* Status line */}
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#4a5468', marginBottom: '10px' }}>
+          Active Session
         </div>
-
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-          MikroTik Hotspot
-        </span>
-      </div>
-
-      {/* Countdown Card */}
-      <div className="bg-[#141924] rounded-xl p-4 border border-[#232c3d] text-center space-y-1">
-        <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-400 flex items-center justify-center gap-1">
-          <Clock size={12} />
-          <span>Active Session Time Remaining</span>
-        </div>
-        <div className="text-3xl sm:text-4xl font-extrabold font-mono text-emerald-400 tracking-tight">
-          {formatTime(secondsRemaining)}
-        </div>
-        <div className="text-[11px] text-slate-500">
-          Scheduled expiration: {session.expiresAt}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="live-dot" />
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0' }}>
+            Online · {session.planName}
+          </span>
         </div>
       </div>
 
-      {/* Bandwidth Usage Grid */}
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="bg-[#0e121b] rounded-lg p-3 border border-[#1f2738]">
-          <div className="text-[11px] text-slate-400 flex items-center gap-1">
-            <DownloadSimple size={13} className="text-emerald-400" />
-            <span>Downloaded</span>
-          </div>
-          <div className="text-base font-bold font-mono text-slate-100 mt-1">
-            {formatBytes(downloadBytes)}
-          </div>
+      {/* Timer */}
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{ fontSize: '10px', color: '#4a5468', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+          Time remaining
         </div>
-
-        <div className="bg-[#0e121b] rounded-lg p-3 border border-[#1f2738]">
-          <div className="text-[11px] text-slate-400 flex items-center gap-1">
-            <UploadSimple size={13} className="text-sky-400" />
-            <span>Uploaded</span>
-          </div>
-          <div className="text-base font-bold font-mono text-slate-100 mt-1">
-            {formatBytes(uploadBytes)}
-          </div>
+        <div className="session-timer">{formatTime(seconds)}</div>
+        <div style={{ fontSize: '11px', color: '#4a5468', marginTop: '6px' }}>
+          Expires at {session.expiresAt}
         </div>
       </div>
 
-      {/* Buttons */}
-      <div className="flex gap-2 pt-1">
-        <Button
-          onClick={onExtend}
-          variant="mpesa"
-          size="sm"
-          className="flex-1 text-xs font-semibold gap-1.5"
-        >
+      {/* Stats */}
+      <div style={{ marginBottom: '24px' }}>
+        <div className="stat-row">
+          <span className="stat-label">IP Address</span>
+          <span className="stat-value">{session.ipAddress}</span>
+        </div>
+        <div className="stat-row">
+          <span className="stat-label">MAC</span>
+          <span className="stat-value">{session.macAddress}</span>
+        </div>
+        <div className="stat-row">
+          <span className="stat-label">
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <DownloadSimple size={12} /> Downloaded
+            </span>
+          </span>
+          <span className="stat-value">{formatBytes(down)}</span>
+        </div>
+        <div className="stat-row">
+          <span className="stat-label">
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <UploadSimple size={12} /> Uploaded
+            </span>
+          </span>
+          <span className="stat-value">{formatBytes(up)}</span>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button className="btn-primary" style={{ flex: 1, fontSize: '12px' }} onClick={onExtend}>
           <ArrowClockwise size={14} weight="bold" />
-          <span>Renew / Change Plan</span>
-        </Button>
-        <Button
+          Renew Plan
+        </button>
+        <button
+          className="btn-outline"
+          style={{ color: '#ef4444', borderColor: '#2d1515' }}
           onClick={onDisconnect}
-          variant="outline"
-          size="sm"
-          className="text-rose-400 border-rose-900/40 hover:bg-rose-950/30 text-xs"
         >
           <SignOut size={14} weight="bold" />
-          <span>Disconnect</span>
-        </Button>
+          Disconnect
+        </button>
       </div>
     </div>
   );
